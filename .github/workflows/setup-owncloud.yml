@@ -16,7 +16,14 @@ jobs:
     - name: Update package list and install necessary packages
       run: |
         sudo apt-get update
-        sudo apt-get install -y apache2 postgresql postgresql-contrib php libapache2-mod-php php-pgsql php-json php-mbstring php-curl php-xml php-pear php-bcmath php-zip php-intl php-gd unzip wget
+        sudo apt-get install -y apache2 postgresql postgresql-contrib wget unzip jq
+
+    - name: Install PHP 7.4 and necessary extensions
+      run: |
+        sudo apt-get install -y software-properties-common
+        sudo add-apt-repository ppa:ondrej/php
+        sudo apt-get update
+        sudo apt-get install -y php7.4 libapache2-mod-php7.4 php7.4-cli php7.4-pgsql php7.4-json php7.4-mbstring php7.4-curl php7.4-xml php7.4-pear php7.4-bcmath php7.4-zip php7.4-intl php7.4-gd
 
     - name: Start PostgreSQL service
       run: |
