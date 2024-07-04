@@ -17,10 +17,8 @@ jobs:
 
     - name: Set up PostgreSQL database and user
       run: |
-        sudo -i -u postgres bash << EOF
-        createuser --pwprompt ownclouduser
-        createdb --owner=ownclouduser ownclouddb
-        EOF
+        sudo -i -u postgres psql -c "CREATE USER ownclouduser WITH PASSWORD 'owncloud';"
+        sudo -i -u postgres psql -c "CREATE DATABASE ownclouddb OWNER ownclouduser;"
 
     - name: Download and unzip OwnCloud
       run: |
