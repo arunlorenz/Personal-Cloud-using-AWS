@@ -62,9 +62,10 @@ jobs:
 
         </VirtualHost>' | sudo tee /etc/apache2/sites-available/owncloud.conf
 
-    - name: Enable OwnCloud site and restart Apache
+    - name: Enable OwnCloud site and disable default site
       run: |
         sudo a2ensite owncloud.conf
+        sudo a2dissite 000-default.conf
         sudo systemctl restart apache2
 
     - name: Install latest version of ngrok
