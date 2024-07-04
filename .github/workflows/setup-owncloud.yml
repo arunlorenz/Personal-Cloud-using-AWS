@@ -1,0 +1,62 @@
+name: Setup OwnCloud
+
+on: [push]
+
+jobs:
+  setup-owncloud:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Update package list and install necessary packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y apache2 postgresql postgresql-contrib php libapache2-mod-php php-pgsql php-json php-mbstring php-curl php-xml php-pear php-bcmath php-zip php-intl php-gd unzip wget
+
+    - name: Set up PostgreSQL database and user
+      run: |
+        sudo -i -u postgres bash << EOF
+        createuser --pwprompt ownclouduser
+        createdb --owner=ownclouduser ownclouddb
+        EOF
+
+    - name: Download and unzip OwnCloud
+      run: |
+        wget https://download.owncloud.com/server/stable/owncloud-complete-latest.zip
+        sudo unzip owncloud-complete-latest.zip -d /var/www/
+
+    - name: Set permissions
+      run: |
+        sudo mkdir -p /var/www/owncloud/data
+        sudo chown -R www-data:www-data /var/www/owncloud/
+
+    - name: Set up Apache configuration for OwnCloud
+      run: |
+        echo '<VirtualHost *:80>
+          ServerAdmin webmaster@localhost
+          DocumentRoot /var/www/owncloud
+
+          <Directory /var/www/owncloud/>
+            Options +FollowSymlinks
+            AllowOverride All
+
+            <IfModule mod_dav.c>
+              Dav off
+            </IfModule>
+
+            SetEnv HOME /var/www/owncloud
+            SetEnv HTTP_HOME /var/www/owncloud
+
+          </Directory>
+
+          ErrorLog ${APACHE_LOG_DIR}/error.log
+          CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        </VirtualHost>' | sudo tee /etc/apache2/sites-available/owncloud.conf
+
+    - name: Enable OwnCloud site and restart Apache
+      run: |
+        sudo a2ensite owncloud.conf
+        sudo systemctl restart apache2
